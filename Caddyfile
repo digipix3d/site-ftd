@@ -7,13 +7,6 @@ www.{$DOMINIO} {
 	redir https://{$DOMINIO}{uri} permanent
 }
 
-# Existe só para o Caddy obter e RENOVAR o certificado TLS que o servidor de
-# e-mail usa (ele monta o volume de certificados somente-leitura). Assim não
-# há certbot separado nem renovação manual. Não serve conteúdo.
-mail.{$DOMINIO} {
-	respond "Servidor de e-mail da Fábrica de Trecos." 200
-}
-
 {$DOMINIO} {
 	encode zstd gzip
 

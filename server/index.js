@@ -170,12 +170,33 @@ await app.register(fastifyStatic, {
   },
 });
 
+/**
+ * Página de 404 carregada na memória na subida.
+ *
+ * Não dá para usar `reply.sendFile()` aqui: `app.register()` encapsula, então o
+ * decorador do @fastify/static só existe dentro do contexto do plugin, e este
+ * handler roda na raiz. Chamá-lo lançava TypeError e derrubava o processo — e
+ * quem dispara 404 aos milhares numa VPS pública é varredura de bot.
+ *
+ * Servir da memória também evita ida ao disco a cada 404, que é exatamente
+ * quando eles chegam em rajada.
+ */
+let pagina404 = '<!doctype html><meta charset="utf-8"><title>404</title><p>Página não encontrada.';
+
+async function carregarPagina404() {
+  try {
+    pagina404 = await readFile(join(DIR_ESTATICO, '404.html'), 'utf8');
+  } catch (erro) {
+    app.log.warn({ erro: erro.message }, '404.html não encontrado; usando página mínima');
+  }
+}
+
 // 404 devolve a página de erro do site, não JSON
 app.setNotFoundHandler((req, reply) => {
   if (req.url.startsWith('/api/')) {
     return reply.code(404).send({ erro: 'rota não encontrada' });
   }
-  return reply.code(404).type('text/html').sendFile('404.html');
+  return reply.code(404).type('text/html; charset=utf-8').send(pagina404);
 });
 
 // ---------------------------------------------------------------------------
@@ -183,6 +204,7 @@ app.setNotFoundHandler((req, reply) => {
 // ---------------------------------------------------------------------------
 
 await carregarEstado();
+await carregarPagina404();
 
 if (!estado.token || !IG_USER_ID) {
   app.log.warn(
