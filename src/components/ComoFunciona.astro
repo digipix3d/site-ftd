@@ -1,0 +1,134 @@
+---
+import { comoFunciona, zap } from '../content/conteudo';
+---
+
+<section id="como-funciona" class="como secao halftone-denso">
+  <div class="container">
+    <div class="como__cabecalho">
+      <h2>{comoFunciona.titulo}</h2>
+      <p class="como__subtitulo">{comoFunciona.subtitulo}</p>
+    </div>
+
+    <ol class="como__trilha">
+      {comoFunciona.caminhos.map((caminho, i) => (
+        <li class:list={['como__passo', i % 2 === 0 ? 'como__passo--esq' : 'como__passo--dir']}>
+          <span class="como__numero" aria-hidden="true">{caminho.numero}</span>
+          <div class="cartao como__cartao">
+            <h3>{caminho.titulo}</h3>
+            <p>{caminho.texto}</p>
+            <a href={zap(caminho.msg)} class="btn btn--teal" target="_blank" rel="noopener">
+              {caminho.cta}
+            </a>
+          </div>
+        </li>
+      ))}
+    </ol>
+
+    <p class="cartao como__aviso">{comoFunciona.aviso}</p>
+  </div>
+</section>
+
+<style>
+  .como {
+    background: var(--fundo-alt);
+  }
+
+  .como__cabecalho {
+    max-width: var(--largura-texto);
+    margin-inline: auto;
+    margin-block-end: var(--e-8);
+    text-align: center;
+  }
+
+  .como__subtitulo {
+    font-size: var(--t-md);
+    color: var(--texto-suave);
+  }
+
+  .como__trilha {
+    position: relative;
+    list-style: none;
+    margin: 0 0 var(--e-8);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-6);
+  }
+
+  .como__passo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-3);
+  }
+
+  .como__numero {
+    align-self: flex-start;
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-black);
+    font-size: var(--t-2xl);
+    line-height: 1;
+    color: var(--c-amarelo);
+    text-shadow:
+      -2px -2px 0 var(--c-carvao),
+       2px -2px 0 var(--c-carvao),
+      -2px  2px 0 var(--c-carvao),
+       2px  2px 0 var(--c-carvao);
+  }
+
+  .como__cartao {
+    max-width: 46ch;
+  }
+
+  .como__aviso {
+    max-width: var(--largura-texto);
+    margin-inline: auto;
+    background: var(--c-amarelo);
+    color: var(--c-carvao);
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-forte);
+    font-size: var(--t-md);
+    text-align: center;
+  }
+
+  @media (min-width: 860px) {
+    .como__trilha {
+      position: relative;
+    }
+    .como__trilha::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--c-teal);
+      transform: translateX(-50%);
+      border-radius: var(--raio-pill);
+    }
+
+    .como__passo {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: var(--e-6);
+    }
+
+    .como__numero {
+      grid-column: 2;
+      justify-self: center;
+      position: relative;
+      z-index: 1;
+      padding-inline: var(--e-2);
+      background: var(--fundo-alt);
+    }
+
+    .como__passo--esq .como__cartao {
+      grid-column: 1;
+      justify-self: end;
+    }
+    .como__passo--dir .como__cartao {
+      grid-column: 3;
+      justify-self: start;
+    }
+  }
+</style>

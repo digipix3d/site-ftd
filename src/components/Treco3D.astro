@@ -1,0 +1,207 @@
+---
+/**
+ * Visualizador 3D do Treco, com <model-viewer> (Google) instalado localmente
+ * (sem CDN). O modelo (.glb) só começa a baixar quando a seção aparece na
+ * tela ou depois do carregamento da página — o que vier primeiro. Até lá,
+ * e caso o navegador não rode o componente, a imagem do Treco fica no lugar.
+ */
+import { Image, getImage } from 'astro:assets';
+import { hero } from '../content/conteudo';
+import trecoImg from '../assets/treco/Treco5.png';
+
+// getImage() gera um caminho estático otimizado para usar no atributo
+// `poster` do <model-viewer> (ele exige uma URL simples, não o componente <Image>).
+const poster = await getImage({ src: trecoImg, width: 900, format: 'webp' });
+---
+
+<div class="treco3d" id="treco3d">
+  <div class="treco3d__caixa">
+    <Image
+      src={trecoImg}
+      alt="O Treco, mascote gato amarelo da Fábrica de Trecos, de macacão teal, óculos redondos e botas vermelhas"
+      width={900}
+      height={900}
+      loading="eager"
+      class="treco3d__poster"
+      id="treco3d-poster"
+    />
+
+    <model-viewer
+      id="treco3d-visualizador"
+      class="treco3d__visualizador"
+      alt="Modelo 3D interativo do Treco: arraste para girar e ver de todos os lados"
+      poster={poster.src}
+      camera-controls
+      auto-rotate
+      disable-pan
+      shadow-intensity="1"
+      touch-action="pan-y"
+      interaction-prompt="auto"
+      camera-orbit="90deg 80deg 95%"
+      min-camera-orbit="auto 25deg auto"
+      max-camera-orbit="auto 100deg auto"
+      exposure="1.1"
+    ></model-viewer>
+  </div>
+
+  <p class="treco3d__dica">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3 12a9 9 0 1 0 3-6.7" />
+      <path d="M3 4v4.3h4.3" />
+    </svg>
+    {hero.dica3d}
+  </p>
+</div>
+
+<script>
+  const raiz = document.getElementById('treco3d');
+  const visualizador = raiz?.querySelector('model-viewer');
+
+  if (raiz && visualizador) {
+    let iniciado = false;
+
+    // Quem ligou "economia de dados" no navegador não deve receber 1,6 MB de
+    // visualizador 3D sem pedir. Nesse caso a imagem fica, e só carrega no toque.
+    const economizandoDados = Boolean(
+      (navigator as Navigator & { connection?: { saveData?: boolean } })
+        .connection?.saveData
+    );
+
+    async function iniciar() {
+      if (iniciado || !visualizador) return;
+      iniciado = true;
+
+      const prefereMenosMovimento =
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      try {
+        // Import dinâmico: o código do model-viewer só baixa junto com o modelo.
+        const { ModelViewerElement } = await import('@google/model-viewer');
+        // Decoder Draco local — o .glb foi comprimido com Draco e o
+        // model-viewer precisa saber onde buscar o decodificador.
+        ModelViewerElement.dracoDecoderLocation = '/draco/';
+
+        if (prefereMenosMovimento) {
+          visualizador.removeAttribute('auto-rotate');
+          visualizador.setAttribute('interaction-prompt', 'none');
+        }
+
+        visualizador.addEventListener(
+          'load',
+          () => raiz?.classList.add('treco3d--pronto'),
+          { once: true }
+        );
+        visualizador.addEventListener(
+          'error',
+          () => {
+            iniciado = false;
+          },
+          { once: true }
+        );
+
+        // Só agora o .glb começa a baixar.
+        visualizador.setAttribute('src', '/modelos/treco.glb');
+      } catch {
+        // model-viewer não pôde ser carregado (navegador sem suporte, rede
+        // falhou, etc.) — a imagem de fallback continua visível, sem buraco.
+        iniciado = false;
+      }
+    }
+
+    if (economizandoDados) {
+      // carrega só se a pessoa tocar/clicar no Treco
+      raiz.addEventListener('click', iniciar, { once: true });
+      raiz.style.cursor = 'pointer';
+    } else {
+      if ('IntersectionObserver' in window) {
+        const observador = new IntersectionObserver(
+          (entradas) => {
+            if (entradas.some((e) => e.isIntersecting)) {
+              iniciar();
+              observador.disconnect();
+            }
+          },
+          { rootMargin: '200px' }
+        );
+        observador.observe(raiz);
+      }
+
+      window.addEventListener('load', iniciar, { once: true });
+    }
+  }
+</script>
+
+<style>
+  .treco3d {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--e-4);
+  }
+
+  .treco3d__caixa {
+    position: relative;
+    /* A ALTURA é que manda aqui, e a largura sai da proporção. Com `width:100%`
+       a caixa dependia da coluna do grid — que não estica (align-items:center no
+       .hero__interno) — e colapsava para o tamanho do conteúdo.
+       Retrato acentuado porque o model-viewer enquadra pela esfera que envolve
+       o modelo: numa caixa quadrada, sobra vazio nas laterais. */
+    height: clamp(320px, 34vw + 180px, 600px);
+    aspect-ratio: 3 / 4;
+    width: auto;
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
+  .treco3d__poster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(var(--sombra-lg));
+    transition: opacity var(--transicao);
+  }
+
+  .treco3d__visualizador {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity var(--transicao-mole);
+    --poster-color: transparent;
+  }
+
+  .treco3d--pronto .treco3d__poster {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .treco3d--pronto .treco3d__visualizador {
+    opacity: 1;
+  }
+
+  .treco3d__dica {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e-2);
+    margin: 0;
+    padding: var(--e-2) var(--e-4);
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-medio);
+    font-size: var(--t-sm);
+    color: var(--c-amarelo);
+  }
+  .treco3d__dica svg {
+    flex-shrink: 0;
+    animation: treco3d-girar 2.6s linear infinite;
+  }
+
+  @keyframes treco3d-girar {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .treco3d__dica svg { animation: none; }
+  }
+</style>

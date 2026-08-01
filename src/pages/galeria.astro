@@ -1,0 +1,406 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import { galeria, zap } from '../content/conteudo';
+
+// Formato dos módulos ESM de imagem (o mesmo que astro:assets usa), declarado
+// localmente para não depender de resolver o pacote "astro" via import de tipo.
+type ImagemModulo = {
+  src: string;
+  width: number;
+  height: number;
+  format: 'svg' | 'avif' | 'png' | 'webp' | 'jpeg' | 'jpg' | 'tiff' | 'gif';
+};
+
+// Todas as fotos da galeria, resolvidas em tempo de build pelo nome do arquivo
+// que está em conteudo.ts (galeria.pecas[].arquivo).
+const arquivos = import.meta.glob<{ default: ImagemModulo }>(
+  '../assets/galeria/*.{png,jpg,jpeg}',
+  { eager: true },
+);
+
+function imagemDe(nomeArquivo: string): ImagemModulo {
+  const entrada = Object.entries(arquivos).find(([caminho]) => caminho.endsWith(nomeArquivo));
+  if (!entrada) throw new Error(`galeria.astro: imagem não encontrada — ${nomeArquivo}`);
+  return entrada[1].default;
+}
+
+const titulo = 'Galeria de peças impressas em 3D | Fábrica de Trecos';
+const descricao =
+  'Veja peças reais em PLA, ABS e resina impressas em 3D pela Fábrica de Trecos, em Porto Alegre: bustos, miniaturas e protótipos. Peça a sua também pelo WhatsApp.';
+---
+
+<Base titulo={titulo} descricao={descricao}>
+  <section class="galeria-topo secao">
+    <div class="container">
+      <header class="galeria-topo__cabecalho">
+        <h1>{galeria.titulo}</h1>
+        <p>{galeria.subtitulo}</p>
+      </header>
+    </div>
+  </section>
+
+  <section class="galeria-grade secao">
+    <div class="container">
+      <ul class="galeria-grade__lista">
+        {galeria.pecas.map((peca, indice) => (
+          <li>
+            <button
+              type="button"
+              class="galeria-grade__item"
+              data-abrir-lightbox
+              data-indice={indice}
+              aria-label={`Ampliar foto: ${peca.titulo}, peça em ${peca.material}`}
+              aria-haspopup="dialog"
+            >
+              <Image
+                src={imagemDe(peca.arquivo)}
+                alt={`${peca.titulo}, peça impressa em ${peca.material}`}
+                width={640}
+                widths={[320, 480, 640, 800]}
+                sizes="(min-width: 1000px) 25vw, (min-width: 640px) 33vw, 50vw"
+                loading={indice < 2 ? 'eager' : 'lazy'}
+                class="galeria-grade__foto"
+              />
+              <span class="galeria-grade__legenda">
+                <span class="galeria-grade__titulo">{peca.titulo}</span>
+                <span class="galeria-grade__selo">{peca.material}</span>
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <div class="galeria-grade__acoes">
+        <a
+          href={zap(galeria.ctaOrcamento.msg)}
+          class="btn btn--teal btn--grande"
+          target="_blank"
+          rel="noopener"
+        >
+          {galeria.ctaOrcamento.rotulo}
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <dialog id="lightbox" class="lightbox" aria-label="Foto ampliada da peça">
+    <button type="button" class="btn btn--amarelo lightbox__fechar" data-lb-fechar aria-label="Fechar foto ampliada">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
+        <path d="M5 5l14 14M19 5L5 19" />
+      </svg>
+    </button>
+
+    <button type="button" class="btn btn--amarelo lightbox__seta lightbox__seta--anterior" data-lb-anterior aria-label="Foto anterior">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 5l-7 7 7 7" />
+      </svg>
+    </button>
+
+    <div class="lightbox__palco">
+      {galeria.pecas.map((peca, indice) => (
+        <figure
+          class="lightbox__figura"
+          data-slide={indice}
+          data-titulo={peca.titulo}
+          data-material={peca.material}
+          hidden={indice !== 0}
+        >
+          <Image
+            src={imagemDe(peca.arquivo)}
+            alt={`${peca.titulo}, peça impressa em ${peca.material}`}
+            width={1100}
+            loading="lazy"
+            class="lightbox__foto"
+          />
+          <figcaption class="lightbox__legenda">
+            <span class="lightbox__titulo">{peca.titulo}</span>
+            <span class="lightbox__material">{peca.material}</span>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+
+    <button type="button" class="btn btn--amarelo lightbox__seta lightbox__seta--proxima" data-lb-proxima aria-label="Próxima foto">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  </dialog>
+</Base>
+
+<script>
+  const dialogo = document.getElementById('lightbox') as HTMLDialogElement | null;
+  const botoesGaleria = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('[data-abrir-lightbox]'),
+  );
+  const slides = Array.from(dialogo?.querySelectorAll<HTMLElement>('[data-slide]') ?? []);
+  const botaoFechar = dialogo?.querySelector<HTMLButtonElement>('[data-lb-fechar]');
+  const botaoAnterior = dialogo?.querySelector<HTMLButtonElement>('[data-lb-anterior]');
+  const botaoProxima = dialogo?.querySelector<HTMLButtonElement>('[data-lb-proxima]');
+
+  let indiceAtual = 0;
+  let gatilho: HTMLElement | null = null;
+
+  function mostrarSlide(indice: number) {
+    if (!dialogo || slides.length === 0) return;
+    indiceAtual = (indice + slides.length) % slides.length;
+    slides.forEach((slide, i) => {
+      slide.hidden = i !== indiceAtual;
+    });
+    const atual = slides[indiceAtual];
+    const tituloAtual = atual?.dataset.titulo ?? '';
+    const materialAtual = atual?.dataset.material ?? '';
+    dialogo.setAttribute('aria-label', `${tituloAtual}, peça em ${materialAtual}`);
+  }
+
+  function abrir(indice: number, origem: HTMLElement) {
+    if (!dialogo) return;
+    gatilho = origem;
+    mostrarSlide(indice);
+    if (!dialogo.open) dialogo.showModal();
+    document.documentElement.style.overflow = 'hidden';
+  }
+
+  function fechar() {
+    if (!dialogo || !dialogo.open) return;
+    dialogo.close();
+  }
+
+  botoesGaleria.forEach((botao) => {
+    botao.addEventListener('click', () => {
+      const indice = Number(botao.dataset.indice ?? 0);
+      abrir(indice, botao);
+    });
+  });
+
+  botaoFechar?.addEventListener('click', fechar);
+  botaoAnterior?.addEventListener('click', () => mostrarSlide(indiceAtual - 1));
+  botaoProxima?.addEventListener('click', () => mostrarSlide(indiceAtual + 1));
+
+  // Clique no fundo (fora da foto/legenda/botões) fecha — clique no ::backdrop
+  // nativo chega com o próprio <dialog> como alvo do evento.
+  dialogo?.addEventListener('click', (evento) => {
+    if (evento.target === dialogo) fechar();
+  });
+
+  // Setas do teclado navegam. Esc já fecha o <dialog> nativamente (evento 'cancel').
+  dialogo?.addEventListener('keydown', (evento) => {
+    if (evento.key === 'ArrowRight') mostrarSlide(indiceAtual + 1);
+    if (evento.key === 'ArrowLeft') mostrarSlide(indiceAtual - 1);
+  });
+
+  // Ao fechar por qualquer via (Esc, X, fundo): destrava a rolagem e devolve
+  // o foco pro item da grade que abriu a foto.
+  dialogo?.addEventListener('close', () => {
+    document.documentElement.style.removeProperty('overflow');
+    gatilho?.focus();
+    gatilho = null;
+  });
+</script>
+
+<style>
+  .galeria-topo {
+    background: var(--fundo);
+  }
+  .galeria-topo__cabecalho {
+    max-width: var(--largura-texto);
+    margin-inline: auto;
+    text-align: center;
+  }
+  .galeria-topo__cabecalho p {
+    color: var(--texto-suave);
+    font-size: var(--t-md);
+  }
+
+  .galeria-grade {
+    background: var(--fundo-alt);
+    padding-top: 0;
+  }
+
+  .galeria-grade__lista {
+    list-style: none;
+    margin: 0 0 var(--e-8);
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--e-6);
+  }
+
+  .galeria-grade__item {
+    display: block;
+    width: 100%;
+    padding: 0;
+    background: var(--c-branco);
+    border: var(--borda);
+    border-radius: var(--raio-lg);
+    box-shadow: var(--sombra);
+    overflow: hidden;
+    cursor: pointer;
+    text-align: left;
+    transition: transform var(--transicao), box-shadow var(--transicao);
+  }
+  .galeria-grade__item:hover,
+  .galeria-grade__item:focus-visible {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--contorno);
+  }
+  .galeria-grade__item:nth-child(odd) { transform: rotate(-1deg); }
+  .galeria-grade__item:nth-child(even) { transform: rotate(1deg); }
+  .galeria-grade__item:nth-child(odd):hover,
+  .galeria-grade__item:nth-child(odd):focus-visible { transform: rotate(0deg) translate(2px, 2px); }
+  .galeria-grade__item:nth-child(even):hover,
+  .galeria-grade__item:nth-child(even):focus-visible { transform: rotate(0deg) translate(2px, 2px); }
+
+  .galeria-grade__foto {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-bottom: var(--borda);
+  }
+
+  .galeria-grade__legenda {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e-2);
+    padding: var(--e-3) var(--e-4);
+  }
+  .galeria-grade__titulo {
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-forte);
+    font-size: var(--t-sm);
+    color: var(--texto);
+  }
+  .galeria-grade__selo {
+    flex-shrink: 0;
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-forte);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--texto-invertido);
+    background: var(--c-teal);
+    border: var(--borda-fina);
+    border-radius: var(--raio-pill);
+    padding: var(--e-1) var(--e-3);
+    transform: rotate(-3deg);
+  }
+
+  .galeria-grade__acoes {
+    display: flex;
+    justify-content: center;
+  }
+
+  /* ---- Lightbox ----------------------------------------------------- */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(92vw, 900px);
+    max-height: 88vh;
+    padding: var(--e-6);
+    background: var(--c-carvao);
+    color: var(--texto-invertido);
+    border: var(--borda-grossa);
+    border-radius: var(--raio-lg);
+    box-shadow: var(--sombra-xl);
+    transition: opacity var(--transicao-mole), transform var(--transicao-mole);
+    transition-behavior: allow-discrete;
+  }
+  .lightbox::backdrop {
+    background: color-mix(in srgb, var(--c-carvao) 78%, transparent);
+    transition: background-color var(--transicao-mole);
+    transition-behavior: allow-discrete;
+  }
+  /* Estado de entrada da animação — navegadores sem suporte a @starting-style
+     simplesmente abrem o diálogo sem o efeito, sem quebrar nada. */
+  @starting-style {
+    .lightbox[open] {
+      opacity: 0;
+      transform: scale(0.94);
+    }
+  }
+
+  .lightbox__palco {
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+  .lightbox__figura {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--e-4);
+    max-width: 100%;
+  }
+  .lightbox__figura[hidden] { display: none; }
+
+  .lightbox__foto {
+    max-height: 65vh;
+    width: auto;
+    max-width: 100%;
+    border: var(--borda);
+    border-radius: var(--raio);
+  }
+
+  .lightbox__legenda {
+    display: flex;
+    align-items: center;
+    gap: var(--e-3);
+    text-align: center;
+  }
+  .lightbox__titulo {
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-forte);
+    font-size: var(--t-md);
+  }
+  .lightbox__material {
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-forte);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--texto-invertido);
+    background: var(--c-teal);
+    border: var(--borda-fina);
+    border-radius: var(--raio-pill);
+    padding: var(--e-1) var(--e-3);
+  }
+
+  .lightbox__fechar {
+    position: absolute;
+    top: var(--e-4);
+    right: var(--e-4);
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lightbox__seta {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .lightbox__seta--anterior { left: var(--e-4); }
+  .lightbox__seta--proxima { right: var(--e-4); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lightbox,
+    .lightbox::backdrop {
+      transition: none;
+    }
+  }
+</style>

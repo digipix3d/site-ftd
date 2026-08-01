@@ -1,0 +1,23 @@
+{
+  "name": "fabrica-de-trecos",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "otimizar:glb": "gltf-transform optimize src/assets/treco/TrecoBoneco.glb public/modelos/treco.glb --compress draco --texture-compress webp"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@google/model-viewer": "^4.3.1",
+    "astro": "^7.1.6",
+    "sharp": "^0.35.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@gltf-transform/cli": "^4.4.2",
+    "typescript": "^6.0.3"
+  }
+}

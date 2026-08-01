@@ -1,0 +1,278 @@
+---
+import { instagram, empresa } from '../content/conteudo';
+
+const TAMANHO_ESQUELETO = 6;
+---
+
+<section id="instagram" class="instagram secao" aria-labelledby="instagram-titulo">
+  <div class="container">
+    <header class="instagram__cabecalho">
+      <h2 id="instagram-titulo">{instagram.titulo}</h2>
+      <p>{instagram.subtitulo}</p>
+    </header>
+
+    <ul
+      class="instagram__grade"
+      id="instagram-grade"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label="Publicações recentes do Instagram"
+      data-perfil={empresa.instagram}
+    >
+      {Array.from({ length: TAMANHO_ESQUELETO }).map((_, indice) => (
+        <li class="instagram__esqueleto" style={`animation-delay: ${(indice % 3) * 0.2}s`} aria-hidden="true"></li>
+      ))}
+    </ul>
+
+    <p class="instagram__vazio" id="instagram-vazio" aria-live="polite" hidden>{instagram.vazio}</p>
+
+    <div class="instagram__acoes">
+      <a href={empresa.instagram} class="btn btn--amarelo btn--grande" target="_blank" rel="noopener">
+        {instagram.cta}
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+  const LIMITE_POSTS = 6;
+  const TEMPO_LIMITE_MS = 7000;
+
+  const grade = document.getElementById('instagram-grade');
+  const vazio = document.getElementById('instagram-vazio');
+
+  // reserva para qualquer link que não passe na validação de URL — vem do
+  // atributo data-perfil, preenchido em build time a partir de empresa.instagram.
+  const PERFIL = grade?.dataset.perfil ?? '';
+
+  interface PostInstagram {
+    id: string;
+    caption?: string;
+    media_url: string;
+    permalink: string;
+    media_type: 'IMAGE' | 'VIDEO' | 'CAROUSEL_ALBUM';
+    timestamp: string;
+    thumbnail_url?: string;
+  }
+
+  function mostrarVazio() {
+    if (grade) {
+      grade.hidden = true;
+      grade.setAttribute('aria-busy', 'false');
+    }
+    if (vazio) vazio.hidden = false;
+  }
+
+  function criarIconePlay(): SVGSVGElement {
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('width', '30');
+    svg.setAttribute('height', '30');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.classList.add('instagram__play');
+    const circulo = document.createElementNS(ns, 'circle');
+    circulo.setAttribute('cx', '12');
+    circulo.setAttribute('cy', '12');
+    circulo.setAttribute('r', '11');
+    circulo.setAttribute('fill', 'currentColor');
+    const triangulo = document.createElementNS(ns, 'path');
+    triangulo.setAttribute('d', 'M10 8l7 4-7 4V8z');
+    triangulo.setAttribute('fill', 'var(--c-carvao)');
+    svg.append(circulo, triangulo);
+    return svg;
+  }
+
+  /**
+   * Só deixa passar http(s). A resposta vem da API da Meta, mas um href com
+   * `javascript:` executaria no clique — não custa nada fechar essa porta.
+   */
+  function urlSegura(valor: string | undefined, reserva: string): string {
+    if (!valor) return reserva;
+    try {
+      const u = new URL(valor, window.location.origin);
+      return (u.protocol === 'https:' || u.protocol === 'http:') ? u.href : reserva;
+    } catch {
+      return reserva;
+    }
+  }
+
+  function montarItem(post: PostInstagram): HTMLLIElement {
+    const item = document.createElement('li');
+    item.className = 'instagram__item';
+
+    const link = document.createElement('a');
+    link.href = urlSegura(post.permalink, PERFIL);
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.className = 'instagram__link';
+
+    const miniatura = document.createElement('div');
+    miniatura.className = 'instagram__miniatura';
+
+    const ehVideo = post.media_type === 'VIDEO';
+
+    const img = document.createElement('img');
+    const origemImagem = (ehVideo && post.thumbnail_url) ? post.thumbnail_url : post.media_url;
+    img.src = urlSegura(origemImagem, '');
+    img.alt = '';
+    img.loading = 'lazy';
+    img.className = 'instagram__imagem';
+    miniatura.appendChild(img);
+
+    if (ehVideo) {
+      miniatura.appendChild(criarIconePlay());
+    }
+
+    link.appendChild(miniatura);
+
+    const legenda = document.createElement('p');
+    legenda.className = 'instagram__legenda';
+    // textContent sempre — o texto vem de fora (API da Meta), nunca innerHTML.
+    legenda.textContent = post.caption ?? '';
+    link.appendChild(legenda);
+
+    item.appendChild(link);
+    return item;
+  }
+
+  async function carregarFeed() {
+    if (!grade) return;
+
+    const controlador = new AbortController();
+    const temporizador = window.setTimeout(() => controlador.abort(), TEMPO_LIMITE_MS);
+
+    try {
+      const resposta = await fetch('/api/instagram', { signal: controlador.signal });
+      window.clearTimeout(temporizador);
+
+      if (!resposta.ok) throw new Error(`instagram: resposta ${resposta.status}`);
+
+      const dados = await resposta.json();
+      const posts: PostInstagram[] = Array.isArray(dados?.posts) ? dados.posts : [];
+
+      if (posts.length === 0) {
+        mostrarVazio();
+        return;
+      }
+
+      grade.textContent = '';
+      posts.slice(0, LIMITE_POSTS).forEach((post) => grade.appendChild(montarItem(post)));
+      grade.setAttribute('aria-busy', 'false');
+    } catch {
+      window.clearTimeout(temporizador);
+      mostrarVazio();
+    }
+  }
+
+  carregarFeed();
+</script>
+
+<style>
+  .instagram {
+    background: var(--fundo-escuro);
+    color: var(--texto-invertido);
+  }
+
+  .instagram__cabecalho {
+    max-width: var(--largura-texto);
+    margin-inline: auto;
+    margin-bottom: var(--e-7);
+    text-align: center;
+  }
+  .instagram__cabecalho h2 { color: var(--texto-invertido); }
+  .instagram__cabecalho p { color: var(--c-cinza); font-size: var(--t-md); }
+
+  .instagram__grade {
+    list-style: none;
+    margin: 0 0 var(--e-6);
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--e-5);
+  }
+
+  /* ---- Esqueleto de carregamento: pulso alternando entre dois tons ----- */
+  .instagram__esqueleto {
+    aspect-ratio: 4 / 5;
+    border: var(--borda-fina);
+    border-radius: var(--raio);
+    background: var(--c-carvao-suave);
+    animation: instagram-pulso 1.4s ease-in-out infinite;
+  }
+
+  @keyframes instagram-pulso {
+    0%, 100% { background-color: var(--c-carvao-suave); }
+    50% { background-color: var(--c-teal-escuro); }
+  }
+
+  .instagram__item { display: flex; }
+
+  .instagram__link {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: var(--c-carvao-suave);
+    border: var(--borda);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra-amarela);
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--texto-invertido);
+    transition: transform var(--transicao), box-shadow var(--transicao);
+  }
+  .instagram__link:hover,
+  .instagram__link:focus-visible {
+    color: var(--texto-invertido);
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0 var(--c-amarelo);
+  }
+
+  .instagram__miniatura {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    background: var(--c-carvao);
+  }
+  .instagram__imagem {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-bottom: var(--borda-fina);
+  }
+  .instagram__play {
+    position: absolute;
+    right: var(--e-3);
+    bottom: var(--e-3);
+    color: var(--c-amarelo);
+    filter: drop-shadow(2px 2px 0 var(--c-carvao));
+  }
+
+  .instagram__legenda {
+    margin: 0;
+    padding: var(--e-3) var(--e-4);
+    font-size: var(--t-sm);
+    line-height: var(--altura-corpo);
+    color: var(--texto-invertido);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    line-clamp: 3;
+    overflow: hidden;
+  }
+
+  .instagram__vazio {
+    max-width: var(--largura-texto);
+    margin: 0 auto var(--e-6);
+    padding: var(--e-5);
+    text-align: center;
+    font-size: var(--t-md);
+    background: var(--c-carvao-suave);
+    border: var(--borda-fina);
+    border-radius: var(--raio);
+  }
+
+  .instagram__acoes {
+    display: flex;
+    justify-content: center;
+  }
+</style>

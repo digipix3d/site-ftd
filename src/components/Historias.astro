@@ -1,0 +1,262 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { historias, empresa } from '../content/conteudo';
+
+// Todas as tirinhas, resolvidas em tempo de build pelo nome do arquivo
+// que está em conteudo.ts (historias.tirinhas[].arquivo).
+const arquivos = import.meta.glob<{ default: ImageMetadata }>(
+  '../assets/quadrinhos/*.{png,jpg,jpeg}',
+  { eager: true },
+);
+
+function imagemDe(nomeArquivo: string): ImageMetadata {
+  const entrada = Object.entries(arquivos).find(([caminho]) => caminho.endsWith(nomeArquivo));
+  if (!entrada) throw new Error(`Historias: imagem não encontrada — ${nomeArquivo}`);
+  return entrada[1].default;
+}
+
+const rotacoes = ['esq', 'dir', 'esq'] as const;
+---
+
+<section id="historias" class="historias secao" aria-labelledby="historias-titulo">
+  <div class="container">
+    <header class="historias__cabecalho">
+      <h2 id="historias-titulo">{historias.titulo}</h2>
+      <p>{historias.subtitulo}</p>
+    </header>
+
+    <ul class="historias__mural">
+      {historias.tirinhas.map((tirinha, indice) => {
+        const img = imagemDe(tirinha.arquivo);
+        const idDialogo = `historia-dialogo-${indice}`;
+        return (
+          <li class="historias__item" data-rotacao={rotacoes[indice % rotacoes.length]}>
+            <button
+              type="button"
+              class="historias__moldura"
+              data-abre={idDialogo}
+              aria-haspopup="dialog"
+            >
+              <Image
+                src={img}
+                alt={tirinha.alt}
+                width={img.width}
+                height={img.height}
+                loading={indice === 0 ? 'eager' : 'lazy'}
+                class="historias__img"
+              />
+              <span class="historias__titulo-tirinha">{tirinha.titulo}</span>
+            </button>
+
+            <dialog id={idDialogo} class="historias__dialogo" aria-label={tirinha.titulo}>
+              <div class="historias__caixa">
+                <button type="button" class="historias__fechar" data-fecha aria-label="Fechar">
+                  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                    <path
+                      d="M6 6l12 12M18 6L6 18"
+                      stroke="currentColor"
+                      stroke-width="3"
+                      stroke-linecap="round"
+                      fill="none"
+                    />
+                  </svg>
+                </button>
+                <Image
+                  src={img}
+                  alt={tirinha.alt}
+                  width={img.width}
+                  height={img.height}
+                  loading="lazy"
+                  class="historias__img-grande"
+                />
+                <p class="historias__legenda-dialogo">{tirinha.titulo}</p>
+              </div>
+            </dialog>
+          </li>
+        );
+      })}
+    </ul>
+
+    <div class="historias__acoes">
+      <a href={empresa.instagram} class="btn btn--teal btn--grande" target="_blank" rel="noopener">
+        {historias.cta}
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+  const botoesAbrir = document.querySelectorAll<HTMLButtonElement>('.historias__moldura[data-abre]');
+
+  botoesAbrir.forEach((botao) => {
+    botao.addEventListener('click', () => {
+      const id = botao.getAttribute('data-abre');
+      const dialogo = id ? document.getElementById(id) : null;
+      if (dialogo instanceof HTMLDialogElement) {
+        dialogo.showModal();
+      }
+    });
+  });
+
+  const dialogos = document.querySelectorAll<HTMLDialogElement>('.historias__dialogo');
+
+  dialogos.forEach((dialogo) => {
+    // Clique fora (no ::backdrop ou na margem do próprio <dialog>) fecha —
+    // o Esc já fecha sozinho, é comportamento nativo do <dialog>.
+    dialogo.addEventListener('click', (evento) => {
+      if (evento.target === dialogo) dialogo.close();
+    });
+
+    dialogo.querySelector('[data-fecha]')?.addEventListener('click', () => dialogo.close());
+
+    dialogo.addEventListener('close', () => document.body.classList.remove('historias--travado'));
+    dialogo.addEventListener('cancel', () => document.body.classList.remove('historias--travado'));
+  });
+</script>
+
+<style>
+  .historias {
+    background: var(--fundo-alt);
+  }
+
+  .historias__cabecalho {
+    max-width: var(--largura-texto);
+    margin-inline: auto;
+    margin-bottom: var(--e-8);
+    text-align: center;
+  }
+  .historias__cabecalho p {
+    color: var(--texto-suave);
+    font-size: var(--t-md);
+  }
+
+  .historias__mural {
+    list-style: none;
+    margin: 0 0 var(--e-8);
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    align-items: start;
+    gap: var(--e-8) var(--e-6);
+  }
+
+  .historias__item[data-rotacao='esq'] .historias__moldura { transform: rotate(-2.5deg); }
+  .historias__item[data-rotacao='dir'] .historias__moldura { transform: rotate(2deg); }
+  .historias__item:nth-child(2) .historias__moldura { transform: rotate(-1.5deg); }
+
+  /* botão "pino" no topo, pra reforçar o ar de mural pregado */
+  .historias__item {
+    position: relative;
+  }
+  .historias__item::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    background: var(--c-vermelho);
+    border: var(--borda-fina);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+  }
+
+  .historias__moldura {
+    display: block;
+    width: 100%;
+    padding: var(--e-2) var(--e-2) var(--e-3);
+    background: var(--c-branco);
+    border: var(--borda-grossa);
+    border-radius: var(--raio-sm);
+    box-shadow: var(--sombra-lg);
+    cursor: pointer;
+    font: inherit;
+    text-align: center;
+    transition: transform var(--transicao), box-shadow var(--transicao);
+  }
+  .historias__moldura:hover,
+  .historias__moldura:focus-visible {
+    transform: rotate(0deg) translate(-3px, -3px) !important;
+    box-shadow: var(--sombra-xl);
+  }
+
+  .historias__img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    border: var(--borda-fina);
+    background: var(--c-creme-claro);
+  }
+
+  .historias__titulo-tirinha {
+    display: block;
+    margin-top: var(--e-3);
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-forte);
+    font-size: var(--t-sm);
+    color: var(--texto);
+  }
+
+  .historias__acoes {
+    display: flex;
+    justify-content: center;
+  }
+
+  /* ---- Dialog nativo: tirinha ampliada -------------------------------- */
+  .historias__dialogo {
+    padding: var(--e-5);
+    background: transparent;
+    border: none;
+    max-width: min(92vw, 640px);
+    max-height: 90vh;
+  }
+  .historias__dialogo::backdrop {
+    background: color-mix(in srgb, var(--c-carvao) 75%, transparent);
+  }
+
+  .historias__caixa {
+    position: relative;
+    background: var(--c-branco);
+    border: var(--borda-grossa);
+    border-radius: var(--raio-lg);
+    box-shadow: var(--sombra-xl);
+    padding: var(--e-5);
+    max-height: calc(90vh - var(--e-6));
+    overflow-y: auto;
+  }
+
+  .historias__fechar {
+    position: absolute;
+    top: var(--e-3);
+    right: var(--e-3);
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: var(--c-amarelo);
+    color: var(--c-carvao);
+    border: var(--borda-fina);
+    border-radius: var(--raio-pill);
+    box-shadow: var(--sombra-sm);
+    cursor: pointer;
+  }
+  .historias__fechar:hover { transform: translate(1px, 1px); box-shadow: none; }
+
+  .historias__img-grande {
+    width: 100%;
+    height: auto;
+    max-height: 70vh;
+    object-fit: contain;
+  }
+
+  .historias__legenda-dialogo {
+    margin: var(--e-4) 0 0;
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-forte);
+    font-size: var(--t-md);
+    text-align: center;
+  }
+</style>

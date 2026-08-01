@@ -1,0 +1,76 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import treco from '../assets/treco/BonecoTreco4.png';
+import { zap } from '../content/conteudo';
+---
+
+<Base
+  titulo="Página não encontrada — Fábrica de Trecos"
+  descricao="Essa página não existe. Volte para o início ou fale com a gente no WhatsApp."
+>
+  <section class="erro secao">
+    <div class="container erro__interno">
+      <Image src={treco} alt="O Treco, mascote da Fábrica de Trecos, com cara de confuso"
+             width={280} height={280} class="erro__treco" loading="eager" />
+      <div class="erro__texto">
+        <p class="erro__codigo">404</p>
+        <h1>Esse treco não existe.</h1>
+        <p class="erro__frase">
+          Procurei em todas as gavetas e não achei essa página. Deve ter sido
+          impressa errado.
+        </p>
+        <div class="erro__acoes">
+          <a href="/" class="btn btn--amarelo btn--grande">Voltar pro início</a>
+          <a href={zap('Oi! Cheguei numa página que não existe no site.')}
+             class="btn" target="_blank" rel="noopener">Falar no WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .erro { background: var(--fundo-alt); }
+
+  .erro__interno {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--e-7);
+    flex-wrap: wrap;
+    min-height: 52vh;
+    text-align: start;
+  }
+
+  .erro__treco {
+    width: clamp(180px, 30vw, 280px);
+    height: auto;
+    transform: rotate(-4deg);
+  }
+
+  .erro__texto { max-width: 42ch; }
+
+  .erro__codigo {
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-black);
+    font-size: var(--t-2xl);
+    color: var(--c-vermelho);
+    margin: 0;
+    line-height: 1;
+  }
+
+  .erro__frase { color: var(--texto-suave); }
+
+  .erro__acoes {
+    display: flex;
+    gap: var(--e-3);
+    flex-wrap: wrap;
+    margin-top: var(--e-5);
+  }
+
+  @media (max-width: 640px) {
+    .erro__interno { text-align: center; }
+    .erro__acoes { justify-content: center; }
+  }
+</style>

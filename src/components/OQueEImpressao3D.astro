@@ -1,0 +1,140 @@
+---
+import { Image } from 'astro:assets';
+import { oQueE, zap } from '../content/conteudo';
+import treco4 from '../assets/treco/BonecoTreco4.png';
+
+const cores = ['amarelo', 'teal', 'laranja', 'vermelho'] as const;
+---
+
+<section class="oqe secao" id="o-que-e">
+  <div class="container">
+    <h2 class="oqe__titulo">{oQueE.titulo}</h2>
+    <p class="oqe__intro">{oQueE.intro}</p>
+
+    <div class="oqe__blocos">
+      {oQueE.blocos.map((bloco, i) => (
+        <article class={`oqe__bloco oqe__bloco--${cores[i % cores.length]}`}>
+          <h3 class="oqe__bloco-titulo">{bloco.titulo}</h3>
+          <p class="oqe__bloco-texto">{bloco.texto}</p>
+        </article>
+      ))}
+    </div>
+
+    <div class="oqe__fechamento">
+      <Image
+        src={treco4}
+        alt="O Treco sorrindo, satisfeito consigo mesmo"
+        width={200}
+        height={200}
+        class="oqe__treco"
+        loading="lazy"
+      />
+      <p class="balao oqe__balao">{oQueE.fechamento}</p>
+    </div>
+
+    <div class="oqe__cta-wrap">
+      <a href={zap(oQueE.cta.msg)} class="btn btn--amarelo btn--grande" target="_blank" rel="noopener">
+        {oQueE.cta.rotulo}
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .oqe {
+    background: var(--fundo-escuro);
+    color: var(--texto-invertido);
+  }
+
+  .oqe__titulo {
+    color: var(--texto-invertido);
+  }
+
+  .oqe__intro {
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-forte);
+    font-size: var(--t-md);
+    color: var(--c-amarelo);
+    margin-bottom: var(--e-7);
+  }
+
+  /* sequência empilhada: cada bloco é uma "camada" impressa sobre a anterior */
+  .oqe__blocos {
+    display: grid;
+    gap: var(--e-6);
+    margin-bottom: var(--e-8);
+  }
+
+  .oqe__bloco {
+    position: relative;
+    background: var(--c-carvao-suave);
+    border: var(--borda);
+    border-radius: var(--raio-lg);
+    padding: var(--e-5) var(--e-5) var(--e-5) var(--e-6);
+    /* --sombra é da cor do fundo desta seção e sumiria; ver tokens.css */
+    box-shadow: var(--sombra-profunda);
+    overflow: hidden;
+  }
+  .oqe__bloco:nth-child(1) { margin-inline-end: var(--e-7); transform: rotate(-0.6deg); }
+  .oqe__bloco:nth-child(2) { margin-inline-start: var(--e-6); transform: rotate(0.6deg); }
+  .oqe__bloco:nth-child(3) { margin-inline-end: var(--e-6); transform: rotate(-0.6deg); }
+  .oqe__bloco:nth-child(4) { margin-inline-start: var(--e-7); transform: rotate(0.6deg); }
+
+  .oqe__bloco::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 10px;
+  }
+  .oqe__bloco--amarelo::before  { background: var(--c-amarelo); }
+  .oqe__bloco--teal::before     { background: var(--c-teal); }
+  .oqe__bloco--laranja::before  { background: var(--c-laranja); }
+  .oqe__bloco--vermelho::before { background: var(--c-vermelho); }
+
+  .oqe__bloco-titulo {
+    color: var(--texto-invertido);
+  }
+  .oqe__bloco-texto {
+    max-width: var(--largura-texto);
+    color: var(--texto-invertido);
+    margin: 0;
+  }
+
+  .oqe__fechamento {
+    display: flex;
+    align-items: flex-end;
+    /* curto para o rabinho do balão alcançar o Treco — ver .balao em tokens.css */
+    gap: var(--e-3);
+    margin-bottom: var(--e-7);
+  }
+  .oqe__treco {
+    width: clamp(110px, 9vw + 80px, 190px);
+    height: auto;
+    flex-shrink: 0;
+    transform: rotate(-2deg);
+  }
+  .oqe__balao {
+    font-size: var(--t-md);
+    max-width: var(--largura-texto);
+  }
+
+  .oqe__cta-wrap {
+    text-align: center;
+  }
+
+  @media (max-width: 720px) {
+    .oqe__bloco:nth-child(1),
+    .oqe__bloco:nth-child(2),
+    .oqe__bloco:nth-child(3),
+    .oqe__bloco:nth-child(4) {
+      margin-inline: 0;
+      transform: none;
+    }
+    .oqe__fechamento {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+  }
+</style>

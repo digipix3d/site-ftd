@@ -1,0 +1,25 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Apresentacao from '../components/Apresentacao.astro';
+import Servicos from '../components/Servicos.astro';
+import ComoFunciona from '../components/ComoFunciona.astro';
+import OQueEImpressao3D from '../components/OQueEImpressao3D.astro';
+import DestaquesGaleria from '../components/DestaquesGaleria.astro';
+import Historias from '../components/Historias.astro';
+import InstagramFeed from '../components/InstagramFeed.astro';
+import Contato from '../components/Contato.astro';
+import { seo } from '../content/conteudo';
+---
+
+<Base titulo={seo.titulo} descricao={seo.descricao}>
+  <Hero />
+  <Apresentacao />
+  <Servicos />
+  <ComoFunciona />
+  <OQueEImpressao3D />
+  <DestaquesGaleria />
+  <Historias />
+  <InstagramFeed />
+  <Contato />
+</Base>

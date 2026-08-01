@@ -1,0 +1,141 @@
+---
+import { Image } from 'astro:assets';
+import { apresentacao } from '../content/conteudo';
+import treco from '../assets/treco/BonecoTreco.png';
+---
+
+<section class="apr secao">
+  <div class="container apr__grid">
+    <div class="apr__treco-wrap">
+      <Image
+        src={treco}
+        alt="O Treco, mascote da Fábrica de Trecos, de macacão teal e óculos redondos, apontando para cima"
+        width={280}
+        height={280}
+        class="apr__treco"
+        loading="eager"
+      />
+    </div>
+
+    <div class="apr__conteudo">
+      <h2 class="apr__titulo">{apresentacao.titulo}</h2>
+
+      <div class="apr__falas" id="apr-falas">
+        {apresentacao.falas.map((fala) => (
+          <p class="balao apr__fala">{fala}</p>
+        ))}
+      </div>
+
+      <p class="apr__assinatura">{apresentacao.assinatura}</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  const secao = document.querySelector('.apr');
+  const falas = document.getElementById('apr-falas');
+
+  if (secao && falas) {
+    if ('IntersectionObserver' in window) {
+      const observador = new IntersectionObserver(
+        (entradas, obs) => {
+          entradas.forEach((entrada) => {
+            if (entrada.isIntersecting) {
+              falas.classList.add('apr__falas--visivel');
+              obs.unobserve(entrada.target);
+            }
+          });
+        },
+        { threshold: 0.3 }
+      );
+      observador.observe(secao);
+    } else {
+      falas.classList.add('apr__falas--visivel');
+    }
+  }
+</script>
+
+<style>
+  .apr {
+    background: var(--fundo-alt);
+  }
+
+  .apr__grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    /* Centrado, não alinhado ao topo: assim o Treco fica na altura dos balões
+       e parece que é ele quem está falando. */
+    align-items: center;
+    /* Vão curto de propósito: o rabinho do balão precisa parecer que sai da
+       boca do Treco. Com um vão grande ele aponta para o vazio. */
+    gap: var(--e-4);
+  }
+
+  /* O sticky saiu junto com o align-items:start — centrado, a caixa do Treco
+     tem exatamente a altura dele e não sobra curso para grudar. */
+  .apr__treco-wrap {
+    align-self: center;
+  }
+
+  .apr__treco {
+    width: clamp(140px, 12vw + 100px, 240px);
+    height: auto;
+    transform: rotate(-2deg);
+    filter: drop-shadow(6px 6px 0 var(--contorno));
+  }
+
+  .apr__titulo {
+    margin-bottom: var(--e-6);
+  }
+
+  .apr__falas {
+    display: grid;
+    gap: var(--e-7);
+    max-width: var(--largura-texto);
+  }
+
+  .apr__fala {
+    margin: 0;
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity var(--transicao-mole), transform var(--transicao-mole);
+  }
+
+  .apr__falas--visivel .apr__fala {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .apr__falas--visivel .apr__fala:nth-child(1) { transition-delay: 0ms; }
+  .apr__falas--visivel .apr__fala:nth-child(2) { transition-delay: 220ms; }
+  .apr__falas--visivel .apr__fala:nth-child(3) { transition-delay: 440ms; }
+  .apr__falas--visivel .apr__fala:nth-child(4) { transition-delay: 660ms; }
+
+  .apr__assinatura {
+    margin-top: var(--e-3);
+    margin-bottom: 0;
+    font-size: var(--t-sm);
+    font-style: italic;
+    color: var(--texto-suave);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .apr__fala {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .apr__grid {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      text-align: center;
+      /* empilhado o vão vira espaço vertical e pode voltar a respirar */
+      gap: var(--e-5);
+    }
+    .apr__falas {
+      max-width: none;
+      text-align: left;
+    }
+  }
+</style>

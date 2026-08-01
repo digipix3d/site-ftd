@@ -1,0 +1,161 @@
+---
+import { Image } from 'astro:assets';
+import { galeria, zap } from '../content/conteudo';
+
+// Formato dos módulos ESM de imagem (o mesmo que astro:assets usa), declarado
+// localmente para não depender de resolver o pacote "astro" via import de tipo.
+type ImagemModulo = {
+  src: string;
+  width: number;
+  height: number;
+  format: 'svg' | 'avif' | 'png' | 'webp' | 'jpeg' | 'jpg' | 'tiff' | 'gif';
+};
+
+// Todas as fotos da galeria, resolvidas em tempo de build pelo nome do arquivo
+// que está em conteudo.ts (galeria.pecas[].arquivo).
+const arquivos = import.meta.glob<{ default: ImagemModulo }>(
+  '../assets/galeria/*.{png,jpg,jpeg}',
+  { eager: true },
+);
+
+function imagemDe(nomeArquivo: string): ImagemModulo {
+  const entrada = Object.entries(arquivos).find(([caminho]) => caminho.endsWith(nomeArquivo));
+  if (!entrada) throw new Error(`DestaquesGaleria: imagem não encontrada — ${nomeArquivo}`);
+  return entrada[1].default;
+}
+
+const destaques = galeria.pecas.slice(0, 4);
+---
+
+<section class="destaques secao" aria-labelledby="destaques-titulo">
+  <div class="container">
+    <header class="destaques__cabecalho">
+      <h2 id="destaques-titulo">{galeria.titulo}</h2>
+      <p>{galeria.subtitulo}</p>
+    </header>
+
+    <ul class="destaques__grade">
+      {destaques.map((peca, indice) => (
+        <li class="destaques__item" data-rotacao={indice % 2 === 0 ? 'esq' : 'dir'}>
+          <figure class="destaques__cartao">
+            <Image
+              src={imagemDe(peca.arquivo)}
+              alt={`${peca.titulo}, peça impressa em ${peca.material}`}
+              width={480}
+              loading="lazy"
+              class="destaques__foto"
+            />
+            <figcaption class="destaques__legenda">
+              <span class="destaques__nome">{peca.titulo}</span>
+              <span class="destaques__selo">{peca.material}</span>
+            </figcaption>
+          </figure>
+        </li>
+      ))}
+    </ul>
+
+    <div class="destaques__acoes">
+      <a href="/galeria" class="btn btn--amarelo btn--grande">{galeria.ctaVerTudo}</a>
+      <a
+        href={zap(galeria.ctaOrcamento.msg)}
+        class="btn btn--teal btn--grande"
+        target="_blank"
+        rel="noopener"
+      >
+        {galeria.ctaOrcamento.rotulo}
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .destaques {
+    background: var(--fundo);
+  }
+
+  .destaques__cabecalho {
+    max-width: var(--largura-texto);
+    margin-inline: auto;
+    margin-bottom: var(--e-7);
+    text-align: center;
+  }
+  .destaques__cabecalho p {
+    color: var(--texto-suave);
+    font-size: var(--t-md);
+  }
+
+  .destaques__grade {
+    list-style: none;
+    margin: 0 0 var(--e-8);
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--e-7);
+  }
+
+  .destaques__item {
+    display: flex;
+  }
+  .destaques__item[data-rotacao='esq'] .destaques__cartao { transform: rotate(-1.5deg); }
+  .destaques__item[data-rotacao='dir'] .destaques__cartao { transform: rotate(1.5deg); }
+  .destaques__item[data-rotacao='esq'] .destaques__cartao:hover,
+  .destaques__item[data-rotacao='dir'] .destaques__cartao:hover {
+    transform: rotate(0deg) translate(-2px, -2px);
+  }
+
+  .destaques__cartao {
+    margin: 0;
+    width: 100%;
+    background: var(--c-branco);
+    border: var(--borda);
+    border-radius: var(--raio-lg);
+    box-shadow: var(--sombra);
+    overflow: hidden;
+    transition: transform var(--transicao);
+  }
+
+  .destaques__foto {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-bottom: var(--borda);
+  }
+
+  .destaques__legenda {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e-2);
+    padding: var(--e-3) var(--e-4);
+  }
+
+  .destaques__nome {
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-forte);
+    font-size: var(--t-sm);
+    color: var(--texto);
+  }
+
+  .destaques__selo {
+    flex-shrink: 0;
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-forte);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--texto-invertido);
+    background: var(--c-teal);
+    border: var(--borda-fina);
+    border-radius: var(--raio-pill);
+    padding: var(--e-1) var(--e-3);
+    transform: rotate(-3deg);
+  }
+
+  .destaques__acoes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--e-4);
+  }
+</style>

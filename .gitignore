@@ -1,0 +1,14 @@
+node_modules/
+server/node_modules/
+dist/
+.astro/
+.env
+.env.local
+*.log
+npm-debug.log*
+.DS_Store
+
+# Original pesado do mascote (15 MB). O que o site usa é public/modelos/treco.glb.
+# Se for versionar, use Git LFS.
+src/assets/treco/TrecoBoneco.glb
+public/modelos/treco-alta.glb

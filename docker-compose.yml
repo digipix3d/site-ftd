@@ -1,0 +1,40 @@
+services:
+  web:
+    build: .
+    image: fabrica-de-trecos:latest
+    restart: unless-stopped
+    environment:
+      IG_TOKEN: ${IG_TOKEN:-}
+      IG_USER_ID: ${IG_USER_ID:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes:
+      - dados:/data
+    expose:
+      - "3000"
+    networks: [interna]
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    environment:
+      DOMINIO: ${DOMINIO:-fabricadetrecos.com.br}
+      EMAIL_TLS: ${EMAIL_TLS:-contato@fabricadetrecos.com.br}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_dados:/data      # certificados — NÃO apague, Let's Encrypt tem limite de emissão
+      - caddy_config:/config
+    depends_on:
+      - web
+    networks: [interna]
+
+volumes:
+  dados:
+  caddy_dados:
+  caddy_config:
+
+networks:
+  interna:

@@ -1,0 +1,168 @@
+---
+import { Image } from 'astro:assets';
+import { empresa, navegacao, rodape, horario, linkMaps } from '../content/conteudo';
+import treco from '../assets/treco/Treco5.png';
+---
+
+<footer class="rod">
+  <div class="container rod__interno">
+    <div class="rod__marca">
+      <Image src={treco} alt="O Treco, mascote da Fábrica de Trecos, com uma chave inglesa"
+             width={150} height={150} class="rod__treco" loading="lazy" />
+      <p class="rod__frase">{rodape.frase}</p>
+    </div>
+
+    <nav class="rod__bloco" aria-label="Navegação do rodapé">
+      <h2 class="rod__titulo">O site</h2>
+      <ul class="rod__lista">
+        {navegacao.map((item) => (
+          <li><a href={item.href} class="rod__link">{item.rotulo}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="rod__bloco">
+      <h2 class="rod__titulo">Falar com a gente</h2>
+      <ul class="rod__lista">
+        <li><a href={`https://wa.me/${empresa.whatsapp}`} class="rod__link" target="_blank" rel="noopener">{empresa.telefone}</a></li>
+        <li><a href={`mailto:${empresa.email}`} class="rod__link">{empresa.email}</a></li>
+        <li class="rod__texto">
+          <address class="rod__endereco">
+            {empresa.endereco.galeria}, {empresa.endereco.loja}<br />
+            {empresa.endereco.rua} — {empresa.endereco.bairro}<br />
+            {empresa.cidade}/{empresa.estado} · {empresa.endereco.cep}
+          </address>
+        </li>
+        <li><a href={linkMaps} class="rod__link" target="_blank" rel="noopener">Como chegar</a></li>
+      </ul>
+    </div>
+
+    <div class="rod__bloco">
+      <h2 class="rod__titulo">Atendimento</h2>
+      <ul class="rod__lista">
+        {horario.dias.map((d) => (
+          <li class="rod__texto"><strong>{d.dia}</strong><br />{d.hora}</li>
+        ))}
+      </ul>
+      <div class="rod__redes">
+        <a href={empresa.instagram} class="rod__rede" target="_blank" rel="noopener" aria-label="Instagram da Fábrica de Trecos">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+            <path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4a3.9 3.9 0 0 1-1.4-.9 3.9 3.9 0 0 1-.9-1.4c-.2-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4 1.3-.1 1.7-.1 4.8-.1zm0 1.8c-3.1 0-3.5 0-4.7.1-1.1.1-1.7.2-2.1.3-.5.2-.9.4-1.2.8-.4.3-.6.7-.8 1.2-.1.4-.3 1-.3 2.1-.1 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c.1 1.1.2 1.7.3 2.1.2.5.4.9.8 1.2.3.4.7.6 1.2.8.4.1 1 .3 2.1.3 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c1.1-.1 1.7-.2 2.1-.3.5-.2.9-.4 1.2-.8.4-.3.6-.7.8-1.2.1-.4.3-1 .3-2.1.1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c-.1-1.1-.2-1.7-.3-2.1a3.3 3.3 0 0 0-.8-1.2 3.3 3.3 0 0 0-1.2-.8c-.4-.1-1-.3-2.1-.3-1.2-.1-1.6-.1-4.7-.1z"/>
+            <path d="M12 15.3a3.3 3.3 0 1 1 0-6.6 3.3 3.3 0 0 1 0 6.6zm0-8.4a5.1 5.1 0 1 0 0 10.2 5.1 5.1 0 0 0 0-10.2zM18.6 6.7a1.2 1.2 0 1 1-2.4 0 1.2 1.2 0 0 1 2.4 0z"/>
+          </svg>
+        </a>
+        <a href={empresa.facebook} class="rod__rede" target="_blank" rel="noopener" aria-label="Facebook da Fábrica de Trecos">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+            <path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7A10 10 0 0 0 22 12z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="rod__base">
+    <div class="container rod__base-interno">
+      <p>{rodape.copyright} · CNPJ {empresa.cnpj}</p>
+      <a href="/sitemap-index.xml" class="rod__link-mudo">Mapa do site</a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .rod {
+    background: var(--c-carvao);
+    color: var(--texto-invertido);
+    border-top: var(--borda-grossa);
+  }
+
+  .rod__interno {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1.2fr 1.2fr;
+    gap: var(--e-7) var(--e-5);
+    padding-block: var(--e-8) var(--e-7);
+  }
+
+  .rod__treco {
+    width: 130px;
+    height: auto;
+    /* o Treco "cutuca" o rodapé de dentro */
+    filter: drop-shadow(4px 4px 0 rgba(0, 0, 0, 0.35));
+  }
+  .rod__frase {
+    margin-top: var(--e-3);
+    font-family: var(--fonte-titulo);
+    font-size: var(--t-md);
+    color: var(--c-amarelo);
+    max-width: 22ch;
+  }
+
+  .rod__titulo {
+    font-size: var(--t-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-amarelo);
+    margin-bottom: var(--e-4);
+  }
+
+  .rod__lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--e-2);
+  }
+
+  .rod__link {
+    color: var(--texto-invertido);
+    text-decoration: none;
+    font-size: var(--t-sm);
+    transition: color var(--transicao);
+  }
+  .rod__link:hover { color: var(--c-amarelo); text-decoration: underline; }
+
+  .rod__texto { font-size: var(--t-sm); line-height: 1.5; }
+  .rod__texto--suave { color: var(--c-cinza); }
+
+  /* <address> vem em itálico pela folha do navegador — aqui é endereço mesmo,
+     não citação, então volta ao normal. */
+  .rod__endereco {
+    font-style: normal;
+    line-height: 1.5;
+  }
+
+  .rod__redes { display: flex; gap: var(--e-3); margin-top: var(--e-5); }
+  .rod__rede {
+    display: grid;
+    place-items: center;
+    width: 44px; height: 44px;
+    color: var(--c-carvao);
+    background: var(--c-amarelo);
+    border: var(--borda-fina);
+    border-radius: var(--raio-sm);
+    transition: transform var(--transicao-mole), background var(--transicao);
+  }
+  .rod__rede:hover { background: var(--c-branco); transform: translateY(-3px) rotate(-4deg); }
+
+  .rod__base {
+    border-top: 2px solid var(--c-carvao-suave);
+    padding-block: var(--e-4);
+    font-size: var(--t-xs);
+  }
+  .rod__base-interno {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--e-4);
+    flex-wrap: wrap;
+  }
+  .rod__base p { margin: 0; color: var(--c-cinza); }
+  .rod__link-mudo { color: var(--c-cinza); text-decoration: none; }
+  .rod__link-mudo:hover { color: var(--c-amarelo); }
+
+  @media (max-width: 900px) {
+    .rod__interno { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 560px) {
+    .rod__interno { grid-template-columns: 1fr; gap: var(--e-6); }
+  }
+</style>

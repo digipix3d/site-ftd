@@ -1,0 +1,324 @@
+/* ==========================================================================
+   Fábrica de Trecos — tokens de design
+   Paleta extraída do mascote Treco. Linguagem visual: pop / HQ.
+   REGRA PARA QUEM EDITA: nunca escreva um valor de cor, sombra, raio ou
+   espaçamento na mão. Use sempre as variáveis daqui.
+   ========================================================================== */
+
+:root {
+  /* ---- Cores da marca (do Treco) ---------------------------------------- */
+  --c-amarelo:        #f5b722;  /* primária — corpo do Treco */
+  --c-amarelo-claro:  #ffd166;
+  --c-amarelo-escuro: #d99a0c;
+
+  --c-teal:           #17787a;  /* secundária — macacão e óculos */
+  --c-teal-claro:     #2fa3a5;
+  --c-teal-escuro:    #0d5254;
+
+  --c-vermelho:       #e8402a;  /* ação — botas e nariz */
+  --c-vermelho-claro: #ff6b52;
+  --c-vermelho-escuro:#b82a18;
+
+  --c-laranja:        #f07c1e;  /* acento — orelhas */
+  --c-creme:          #f7e7b8;  /* fundo claro */
+  --c-creme-claro:    #fdf6e3;
+  --c-carvao:         #16293a;  /* texto e contornos */
+  --c-carvao-suave:   #2c4257;
+
+  --c-branco:         #ffffff;
+  --c-cinza:          #6b7c8c;
+
+  /* ---- Papéis semânticos ------------------------------------------------- */
+  --fundo:            var(--c-creme-claro);
+  --fundo-alt:        var(--c-creme);
+  --fundo-escuro:     var(--c-carvao);
+  --texto:            var(--c-carvao);
+  --texto-suave:      var(--c-carvao-suave);
+  --texto-invertido:  var(--c-creme-claro);
+  --contorno:         var(--c-carvao);
+  --acao:             var(--c-vermelho);
+  --acao-hover:       var(--c-vermelho-escuro);
+  --destaque:         var(--c-amarelo);
+
+  /* ---- Tipografia -------------------------------------------------------- */
+  --fonte-titulo: 'Fredoka', system-ui, -apple-system, sans-serif;
+  --fonte-corpo:  'Nunito Sans', system-ui, -apple-system, sans-serif;
+
+  /* escala fluida — encolhe sozinha no celular, sem media query */
+  --t-xs:   clamp(0.78rem, 0.76rem + 0.10vw, 0.85rem);
+  --t-sm:   clamp(0.88rem, 0.85rem + 0.15vw, 0.98rem);
+  --t-base: clamp(1.00rem, 0.96rem + 0.20vw, 1.13rem);
+  --t-md:   clamp(1.16rem, 1.08rem + 0.38vw, 1.40rem);
+  --t-lg:   clamp(1.42rem, 1.26rem + 0.78vw, 1.95rem);
+  --t-xl:   clamp(1.85rem, 1.52rem + 1.62vw, 2.85rem);
+  --t-2xl:  clamp(2.35rem, 1.78rem + 2.80vw, 4.10rem);
+  --t-3xl:  clamp(2.90rem, 1.95rem + 4.70vw, 5.80rem);
+
+  --peso-normal: 400;
+  --peso-medio:  600;
+  --peso-forte:  700;
+  --peso-black:  800;
+
+  --altura-apertada: 1.08;
+  --altura-titulo:   1.18;
+  --altura-corpo:    1.65;
+
+  /* ---- Espaçamento (escala de 4px) --------------------------------------- */
+  --e-1:  0.25rem;
+  --e-2:  0.5rem;
+  --e-3:  0.75rem;
+  --e-4:  1rem;
+  --e-5:  1.5rem;
+  --e-6:  2rem;
+  --e-7:  3rem;
+  --e-8:  4rem;
+  --e-9:  6rem;
+  --e-10: 8rem;
+
+  --secao-y: clamp(3.5rem, 2rem + 6vw, 7rem);   /* respiro vertical padrão */
+
+  /* ---- Contorno e sombra (a assinatura do estilo HQ) --------------------- */
+  /* Sombra SÓLIDA e deslocada, sem blur. É isso que dá a cara de quadrinho. */
+  --borda-fina:   2px solid var(--contorno);
+  --borda:        3px solid var(--contorno);
+  --borda-grossa: 4px solid var(--contorno);
+
+  --sombra-sm: 3px 3px 0 var(--contorno);
+  --sombra:    5px 5px 0 var(--contorno);
+  --sombra-lg: 8px 8px 0 var(--contorno);
+  --sombra-xl: 12px 12px 0 var(--contorno);
+  /* variante colorida, para cartões sobre fundo escuro */
+  --sombra-amarela:  5px 5px 0 var(--c-amarelo);
+  --sombra-vermelha: 5px 5px 0 var(--c-vermelho);
+  /* Em seções escuras a sombra padrão some: ela é da cor do próprio fundo.
+     Esta é a alternativa discreta, para quando a amarela chamaria atenção demais. */
+  --sombra-profunda: 6px 6px 0 rgba(0, 0, 0, 0.45);
+
+  --raio-sm:  8px;
+  --raio:     14px;
+  --raio-lg:  22px;
+  --raio-xl:  32px;
+  --raio-pill: 999px;
+
+  /* ---- Layout ------------------------------------------------------------ */
+  --largura-max:    1200px;
+  --largura-texto:  68ch;   /* linha legível para blocos de leitura */
+  --gutter: clamp(1rem, 0.5rem + 2.5vw, 2.5rem);
+
+  /* ---- Movimento --------------------------------------------------------- */
+  --transicao-rapida: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transicao:        220ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transicao-mole:   420ms cubic-bezier(0.34, 1.56, 0.64, 1); /* com quique */
+
+  --z-base: 1;
+  --z-sticky: 100;
+  --z-modal: 1000;
+}
+
+/* ==========================================================================
+   Padrões de fundo — halftone de HQ
+   ========================================================================== */
+.halftone {
+  background-image: radial-gradient(var(--c-amarelo) 1.5px, transparent 1.6px);
+  background-size: 14px 14px;
+}
+.halftone-teal {
+  background-image: radial-gradient(var(--c-teal) 1.5px, transparent 1.6px);
+  background-size: 14px 14px;
+}
+.halftone-denso {
+  background-image: radial-gradient(color-mix(in srgb, var(--c-carvao) 18%, transparent) 1.5px, transparent 1.6px);
+  background-size: 10px 10px;
+}
+/* raios saindo do centro, como nos logos */
+.raios {
+  background-image: repeating-conic-gradient(
+    from 0deg,
+    color-mix(in srgb, var(--c-amarelo) 22%, transparent) 0deg 9deg,
+    transparent 9deg 18deg
+  );
+}
+
+/* ==========================================================================
+   Reset enxuto
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* O atributo `hidden` vale display:none pela folha do navegador — que perde
+   para qualquer `display` declarado por nós (grid, flex...). Sem esta regra,
+   esconder um elemento por JS simplesmente não funciona. */
+[hidden] { display: none !important; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--fonte-corpo);
+  font-size: var(--t-base);
+  line-height: var(--altura-corpo);
+  color: var(--texto);
+  background: var(--fundo);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--fonte-titulo);
+  font-weight: var(--peso-black);
+  line-height: var(--altura-titulo);
+  margin: 0 0 var(--e-4);
+  text-wrap: balance;      /* evita título com uma palavra órfã na última linha */
+}
+h1 { font-size: var(--t-3xl); line-height: var(--altura-apertada); }
+h2 { font-size: var(--t-2xl); }
+h3 { font-size: var(--t-lg); }
+h4 { font-size: var(--t-md); }
+
+p { margin: 0 0 var(--e-4); text-wrap: pretty; }
+
+img, svg, video, canvas { display: block; max-width: 100%; height: auto; }
+
+a { color: var(--acao); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+a:hover { color: var(--acao-hover); }
+
+button { font: inherit; }
+
+/* Foco visível e consistente — acessibilidade de teclado */
+:focus-visible {
+  outline: 3px solid var(--c-teal);
+  outline-offset: 3px;
+  border-radius: var(--raio-sm);
+}
+
+/* ==========================================================================
+   Utilitários compartilhados
+   ========================================================================== */
+.container {
+  width: 100%;
+  max-width: var(--largura-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.secao { padding-block: var(--secao-y); }
+
+/* Só para leitores de tela */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+
+/* Botão padrão em estilo HQ: contorno grosso + sombra sólida que "afunda" */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-2);
+  padding: var(--e-3) var(--e-5);
+  font-family: var(--fonte-titulo);
+  font-weight: var(--peso-forte);
+  font-size: var(--t-base);
+  line-height: 1;
+  color: var(--c-branco);
+  background: var(--acao);
+  border: var(--borda);
+  border-radius: var(--raio-pill);
+  box-shadow: var(--sombra-sm);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--transicao-rapida), box-shadow var(--transicao-rapida);
+}
+.btn:hover {
+  color: var(--c-branco);
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--contorno);
+}
+.btn:active { transform: translate(3px, 3px); box-shadow: none; }
+
+.btn--amarelo { background: var(--c-amarelo); color: var(--c-carvao); }
+.btn--amarelo:hover { color: var(--c-carvao); }
+.btn--teal { background: var(--c-teal); }
+.btn--vazado { background: transparent; color: var(--c-carvao); }
+.btn--vazado:hover { background: var(--c-amarelo); color: var(--c-carvao); }
+.btn--grande { padding: var(--e-4) var(--e-6); font-size: var(--t-md); }
+
+/* Cartão em estilo HQ */
+.cartao {
+  background: var(--c-branco);
+  border: var(--borda);
+  border-radius: var(--raio-lg);
+  box-shadow: var(--sombra);
+  padding: var(--e-5);
+}
+
+/* Balão de fala do Treco — o rabinho é feito com clip-path, sem imagem */
+.balao {
+  position: relative;
+  background: var(--c-branco);
+  /* O fundo é sempre branco, então a cor do texto tem que ser fixa aqui.
+     Sem isto o balão herda o texto claro das seções escuras e some. */
+  color: var(--texto);
+  border: var(--borda);
+  border-radius: var(--raio-lg);
+  box-shadow: var(--sombra-sm);
+  padding: var(--e-4) var(--e-5);
+  font-family: var(--fonte-titulo);
+  font-weight: var(--peso-medio);
+}
+/* O rabinho é dois triângulos sobrepostos: o de trás (::before), escuro e maior,
+   faz o contorno; o da frente (::after), branco, é o miolo. A base dos dois entra
+   3px para dentro do balão para cobrir a borda e emendar sem costura.
+   Aponta para a ESQUERDA, que é onde o Treco fica ao lado do balão. */
+.balao::before,
+.balao::after {
+  content: '';
+  position: absolute;
+  top: 26px;
+  left: -15px;
+  width: 18px;
+  height: 24px;
+  background: var(--c-branco);
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+}
+.balao::before {
+  top: 22px;
+  left: -19px;
+  width: 22px;
+  height: 32px;
+  background: var(--contorno);
+}
+
+/* Empilhado no celular o Treco fica ACIMA do balão, então o rabinho sobe. */
+@media (max-width: 720px) {
+  .balao::before,
+  .balao::after {
+    top: auto;
+    bottom: auto;
+    left: var(--e-6);
+    top: -15px;
+    width: 24px;
+    height: 18px;
+    clip-path: polygon(0 100%, 100% 100%, 20% 0);
+  }
+  .balao::before {
+    top: -19px;
+    left: calc(var(--e-6) - 4px);
+    width: 32px;
+    height: 22px;
+  }
+}
+
+/* ==========================================================================
+   Movimento — sempre respeitando quem pediu menos animação
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

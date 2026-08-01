@@ -1,0 +1,176 @@
+---
+/**
+ * Primeira dobra do site. Fundo escuro + halftone, Treco 3D à direita.
+ */
+import { Image } from 'astro:assets';
+import { hero, zap } from '../content/conteudo';
+import trecoBaixo from '../assets/treco/TrecoPraBaixo.png';
+import Treco3D from './Treco3D.astro';
+---
+
+<section class="hero halftone secao" aria-labelledby="hero-titulo">
+  <div class="container hero__interno">
+    <div class="hero__texto">
+      <p class="hero__sobretitulo">{hero.sobretitulo}</p>
+      <h1 id="hero-titulo" class="hero__titulo">{hero.titulo}</h1>
+      <p class="hero__subtitulo">{hero.subtitulo}</p>
+
+      <div class="hero__ctas">
+        <a
+          href={zap(hero.ctaPrimario.msg)}
+          class="btn btn--grande hero__cta"
+          target="_blank"
+          rel="noopener"
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5 0-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3z"/>
+            <path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3.1.8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2z"/>
+          </svg>
+          {hero.ctaPrimario.rotulo}
+        </a>
+
+        <a href={hero.ctaSecundario.href} class="btn btn--vazado btn--grande hero__cta-secundario">
+          {hero.ctaSecundario.rotulo}
+        </a>
+      </div>
+    </div>
+
+    <div class="hero__visual">
+      <Treco3D />
+    </div>
+  </div>
+
+  <div class="hero__rolar">
+    <Image
+      src={trecoBaixo}
+      alt=""
+      width={240}
+      height={276}
+      loading="eager"
+      class="hero__rolar-img"
+    />
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    background-color: var(--fundo-escuro);
+    color: var(--texto-invertido);
+    overflow: hidden;
+    /* Espaço reservado para o Treco que fica em pé na base: ele saiu do fluxo,
+       então sem isto ele subiria por cima dos botões. */
+    padding-bottom: calc(var(--secao-y) + 130px);
+  }
+
+  /* O halftone padrão é amarelo cheio — bonito num bloco vazio, mas aqui ele
+     cruza o parágrafo e atrapalha a leitura, sobretudo no celular. Mesma
+     textura, bem mais discreta. */
+  .hero.halftone {
+    background-image: radial-gradient(
+      color-mix(in srgb, var(--c-amarelo) 30%, transparent) 1.5px,
+      transparent 1.6px
+    );
+    background-size: 18px 18px;
+  }
+
+  .hero__interno {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    align-items: center;
+    gap: var(--e-8);
+  }
+
+  .hero__sobretitulo {
+    margin: 0 0 var(--e-3);
+    font-family: var(--fonte-titulo);
+    font-weight: var(--peso-forte);
+    font-size: var(--t-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--c-amarelo);
+  }
+
+  .hero__titulo {
+    font-size: var(--t-3xl);
+    margin-bottom: var(--e-5);
+  }
+
+  .hero__subtitulo {
+    max-width: 46ch;
+    font-size: var(--t-md);
+    color: var(--texto-invertido);
+    opacity: 0.92;
+  }
+
+  .hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e-4);
+    margin-top: var(--e-6);
+  }
+
+  /* .btn já resolve o botão primário; aqui só ajustamos a sombra pra ela
+     não "sumir" contra o fundo escuro (var(--sombra-sm) usa var(--contorno),
+     que é escuro). */
+  .hero__cta {
+    box-shadow: var(--sombra-amarela);
+  }
+  .hero__cta:hover {
+    box-shadow: 1px 1px 0 var(--c-amarelo);
+  }
+
+  /* .btn--vazado foi pensado pra fundo claro (texto e contorno escuros).
+     Aqui o fundo é escuro, então precisamos inverter pra manter contraste. */
+  .hero__cta-secundario {
+    color: var(--texto-invertido);
+    border-color: var(--c-amarelo);
+    box-shadow: var(--sombra-amarela);
+  }
+  .hero__cta-secundario:hover {
+    color: var(--c-carvao);
+    box-shadow: 1px 1px 0 var(--c-amarelo);
+  }
+
+  .hero__visual {
+    display: flex;
+    justify-content: center;
+  }
+
+  /* Fora do fluxo, encostado na base da seção: ele fica em pé sobre a linha
+     que divide o hero da seção seguinte, apontando para ela. */
+  .hero__rolar {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+  }
+  .hero__rolar-img {
+    width: 120px;
+    height: auto;
+    animation: hero-flutuar 2.4s ease-in-out infinite;
+  }
+
+  /* Flutua para CIMA: para baixo ele cruzaria a base da seção e o
+     overflow:hidden do .hero cortaria os pés dele. */
+  @keyframes hero-flutuar {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__rolar-img { animation: none; }
+  }
+
+  @media (max-width: 900px) {
+    .hero__interno {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+    .hero__subtitulo { margin-inline: auto; }
+    .hero__ctas { justify-content: center; }
+  }
+</style>

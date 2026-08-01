@@ -1,0 +1,241 @@
+---
+import { contato, horario, empresa, zap, linkMaps } from '../content/conteudo';
+---
+
+<section class="ctt secao" id="contato">
+  <div class="container">
+    <div class="ctt__convite">
+      <h2 class="ctt__titulo">{contato.titulo}</h2>
+      <p class="ctt__subtitulo">{contato.subtitulo}</p>
+      <a href={zap(contato.ctaZap.msg)} class="btn btn--grande ctt__zap" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true">
+          <path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5 0-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3z"/>
+          <path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3.1.8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2z"/>
+        </svg>
+        {contato.ctaZap.rotulo}
+      </a>
+    </div>
+
+    <div class="ctt__grade">
+      <div class="cartao ctt__cartao ctt__horario">
+        <h3 class="ctt__cartao-titulo">{horario.titulo}</h3>
+        <dl class="ctt__dias">
+          {horario.dias.map((d) => (
+            <div class="ctt__dia">
+              <dt class="ctt__dia-nome">{d.dia}</dt>
+              <dd class="ctt__dia-hora">{d.hora}</dd>
+            </div>
+          ))}
+        </dl>
+        <p class="ctt__observacao">{horario.observacao}</p>
+      </div>
+
+      <div class="cartao ctt__cartao ctt__contatos">
+        <ul class="ctt__lista">
+          <li class="ctt__item">
+            <svg class="ctt__icone" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+              <path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5 0-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3z"/>
+              <path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3.1.8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2z"/>
+            </svg>
+            <a href={`https://wa.me/${empresa.whatsapp}`} class="ctt__link" target="_blank" rel="noopener">{empresa.telefone}</a>
+          </li>
+          <li class="ctt__item">
+            <svg class="ctt__icone" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="14" rx="2"/>
+              <path d="m3 7 9 6 9-6"/>
+            </svg>
+            <a href={`mailto:${empresa.email}`} class="ctt__link">{empresa.email}</a>
+          </li>
+          <li class="ctt__item">
+            <svg class="ctt__icone" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 12 2a7 7 0 0 1 7 7.5C19 14.9 12 21 12 21z"/>
+              <circle cx="12" cy="9.5" r="2.5"/>
+            </svg>
+            <address class="ctt__endereco">
+              <strong>{empresa.endereco.galeria} · {empresa.endereco.loja}</strong>
+              {empresa.endereco.rua}<br />
+              {empresa.endereco.bairro} — {empresa.cidade}/{empresa.estado}<br />
+              CEP {empresa.endereco.cep}
+            </address>
+          </li>
+        </ul>
+
+        <a href={linkMaps} class="btn btn--teal ctt__mapa" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 3 3 5.5v15L9 18l6 3 6-2.5v-15L15 6 9 3z"/>
+            <path d="M9 3v15M15 6v15"/>
+          </svg>
+          Ver no Google Maps
+        </a>
+
+        <p class="ctt__observacao-endereco">{empresa.observacaoEndereco}</p>
+
+        <div class="ctt__qr">
+          <img
+            src="/qr-whatsapp.svg"
+            alt={`QR code que abre uma conversa no WhatsApp com a ${empresa.nome}`}
+            width="150"
+            height="150"
+            loading="lazy"
+          />
+          <p class="ctt__qr-legenda">{contato.qrLegenda}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .ctt {
+    background: var(--c-amarelo);
+    color: var(--c-carvao);
+  }
+
+  .ctt__convite {
+    max-width: var(--largura-texto);
+    margin-inline: auto;
+    margin-bottom: var(--e-8);
+    text-align: center;
+  }
+
+  .ctt__titulo {
+    color: var(--c-carvao);
+  }
+
+  .ctt__subtitulo {
+    font-size: var(--t-md);
+    color: var(--c-carvao);
+    margin-bottom: var(--e-6);
+  }
+
+  .ctt__zap {
+    box-shadow: var(--sombra-lg);
+  }
+
+  .ctt__grade {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--e-6);
+    align-items: start;
+  }
+
+  .ctt__cartao {
+    color: var(--c-carvao);
+  }
+
+  .ctt__horario {
+    transform: rotate(-1deg);
+  }
+  .ctt__contatos {
+    transform: rotate(1deg);
+  }
+
+  .ctt__cartao-titulo {
+    margin-bottom: var(--e-4);
+  }
+
+  .ctt__dias {
+    display: grid;
+    gap: var(--e-2);
+    margin: 0 0 var(--e-4);
+  }
+  .ctt__dia {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--e-4);
+    padding-block: var(--e-2);
+    border-bottom: var(--borda-fina);
+  }
+  .ctt__dia:last-child {
+    border-bottom: none;
+  }
+  .ctt__dia-nome {
+    font-weight: var(--peso-forte);
+  }
+  .ctt__dia-hora {
+    margin: 0;
+    color: var(--texto-suave);
+  }
+
+  .ctt__observacao,
+  .ctt__observacao-endereco {
+    font-size: var(--t-sm);
+    color: var(--texto-suave);
+    margin: 0;
+  }
+
+  /* <address> vem em itálico pela folha do navegador — aqui é endereço mesmo. */
+  .ctt__endereco {
+    font-style: normal;
+    line-height: 1.5;
+  }
+  .ctt__endereco strong {
+    display: block;
+    font-family: var(--fonte-titulo);
+    font-size: var(--t-base);
+  }
+
+  .ctt__mapa {
+    margin-block: var(--e-4) var(--e-3);
+  }
+
+  .ctt__lista {
+    list-style: none;
+    margin: 0 0 var(--e-4);
+    padding: 0;
+    display: grid;
+    gap: var(--e-3);
+  }
+  .ctt__item {
+    display: flex;
+    align-items: center;
+    gap: var(--e-3);
+  }
+  .ctt__icone {
+    flex-shrink: 0;
+    color: var(--c-teal);
+  }
+  .ctt__link {
+    color: var(--c-carvao);
+    font-weight: var(--peso-medio);
+  }
+  .ctt__link:hover {
+    color: var(--acao);
+  }
+
+  .ctt__observacao-endereco {
+    margin-bottom: var(--e-5);
+  }
+
+  .ctt__qr {
+    display: flex;
+    align-items: center;
+    gap: var(--e-4);
+    padding-top: var(--e-4);
+    border-top: var(--borda-fina);
+  }
+  .ctt__qr img {
+    border: var(--borda-fina);
+    border-radius: var(--raio-sm);
+    background: var(--c-branco);
+    flex-shrink: 0;
+  }
+  .ctt__qr-legenda {
+    font-size: var(--t-sm);
+    font-weight: var(--peso-medio);
+    margin: 0;
+  }
+
+  /* quem já está no celular não precisa escanear a própria tela */
+  @media (max-width: 720px) {
+    .ctt__qr {
+      display: none;
+    }
+  }
+
+  @media (max-width: 780px) {
+    .ctt__grade {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Cabeça do Treco, reduzida ao que ainda se lê a 16px:
+       cabeça amarela, orelhas, e a faixa dos óculos teal. -->
+  <rect width="64" height="64" rx="14" fill="#16293a"/>
+  <g stroke="#16293a" stroke-width="3.2" stroke-linejoin="round">
+    <path d="M14 22 L16 8 L28 16 Z" fill="#f5b722"/>
+    <path d="M50 22 L48 8 L36 16 Z" fill="#f5b722"/>
+    <ellipse cx="32" cy="36" rx="21" ry="18" fill="#f5b722"/>
+  </g>
+  <!-- óculos -->
+  <g fill="#17787a" stroke="#16293a" stroke-width="2.6">
+    <rect x="10" y="30" width="44" height="5.5" rx="2.7"/>
+    <circle cx="24" cy="33" r="8"/>
+    <circle cx="40" cy="33" r="8"/>
+  </g>
+  <circle cx="24" cy="33" r="4" fill="#e8f5e9"/>
+  <circle cx="40" cy="33" r="4" fill="#e8f5e9"/>
+  <circle cx="25" cy="33.5" r="2.1" fill="#16293a"/>
+  <circle cx="41" cy="33.5" r="2.1" fill="#16293a"/>
+  <!-- focinho -->
+  <ellipse cx="32" cy="43" rx="3" ry="2.4" fill="#e8402a" stroke="#16293a" stroke-width="1.6"/>
+  <path d="M27 47.5 Q32 51.5 37 47.5" fill="none" stroke="#16293a" stroke-width="2.8" stroke-linecap="round"/>
+</svg>
