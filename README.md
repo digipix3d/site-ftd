@@ -58,6 +58,26 @@ push no master
              └─ healthcheck; se falhar, volta sozinho pra imagem anterior
 ```
 
+### Mudanças no Caddyfile
+
+O `deploy.sh` compara o `Caddyfile` do disco com o que está dentro do container
+antes de recarregar. Parece exagero, mas não é: o arquivo entra por bind mount
+de **um arquivo só**, e o Docker prende esse mount ao inode. O `git reset` do
+deploy escreve um arquivo novo e renomeia por cima — inode diferente — então o
+container segue enxergando o conteúdo velho.
+
+O modo de falhar é o pior possível: o deploy termina verde, o `caddy reload`
+diz que recarregou, e a configuração antiga continua no ar. Foi assim que o
+Treco 3D ficou parado sem ninguém perceber. Quando o mount está furado o script
+recria o container do Caddy; nos outros casos recarrega sem queda.
+
+Se algum dia desconfiar, o teste é direto:
+
+```bash
+docker compose exec caddy md5sum /etc/caddy/Caddyfile
+md5sum Caddyfile        # tem que bater
+```
+
 ### Voltar pra uma versão anterior
 
 A imagem é marcada com o SHA do commit, então não precisa reconstruir nada:
