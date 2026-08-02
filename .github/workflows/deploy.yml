@@ -36,23 +36,27 @@ jobs:
     outputs:
       tag: ${{ steps.meta.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
+      # As ações são presas ao commit exato, não à tag. Tag é um ponteiro que
+      # o dono pode mover: quem comprometesse uma delas rodaria código aqui
+      # dentro, com acesso ao SSH_KEY. O comentário registra a versão para a
+      # atualização, que agora é manual — de propósito.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Definir a tag
         id: meta
         run: echo "tag=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: Autenticar no GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Construir e publicar
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
         with:
           context: .
           push: true
@@ -68,6 +72,9 @@ jobs:
     name: Publicar na VPS
     needs: construir
     runs-on: ubuntu-latest
+    # Este job não lê nem escreve nada no repositório: só usa o segredo do SSH.
+    # Sem token, um passo comprometido não consegue mexer no código.
+    permissions: {}
     steps:
       - name: Deploy por SSH
         env:

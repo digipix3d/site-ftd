@@ -86,6 +86,23 @@ Segredos no repositório: `SSH_KEY`, `SSH_HOST`, `SSH_PORT`, `SSH_HOST_KEY`.
 O `SSH_HOST_KEY` fixa a identidade do servidor — sem ele o deploy aceitaria
 qualquer máquina que respondesse naquele IP.
 
+### Atualizar as ações do workflow
+
+As ações estão presas ao **commit exato**, não à tag (`actions/checkout@11d5960…`
+em vez de `@v4`). Tag é um ponteiro que o dono pode mover — quem comprometesse
+uma delas rodaria código dentro do workflow, com acesso ao `SSH_KEY`. Esse é o
+vetor mais plausível de vazamento do segredo.
+
+O preço é que atualizar virou manual, de propósito. Para descobrir o SHA atual
+de uma versão:
+
+```bash
+gh api repos/actions/checkout/git/ref/tags/v4 --jq '.object.sha'
+```
+
+Vale conferir a cada poucos meses; o comentário ao lado de cada linha diz qual
+versão está presa.
+
 Trocar a chave de deploy, se algum dia precisar:
 
 ```bash
