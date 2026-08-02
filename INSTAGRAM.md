@@ -48,6 +48,27 @@ Esse já é um token de longa duração: vale **60 dias**.
 Nosso servidor renova sozinho a cada 24h, então ele não expira enquanto o site
 estiver no ar. Se o site ficar mais de 60 dias fora, você precisa gerar de novo.
 
+### Onde o token fica, e por que não no GitHub
+
+Ele vive só no `.env` do servidor e no volume `site-ftd_dados`. **Não** é um
+segredo do GitHub, de propósito: quem usa o token é o servidor, não o workflow,
+e injetá-lo pelo deploy exigiria alargar o `command=` que restringe a chave de
+publicação a um único argumento. Uma proteção concreta em troca de comodidade.
+
+O valor no `.env` é uma **semente**: serve para o primeiro uso e para você
+trocar o token quando quiser. Depois disso, quem manda é o token renovado no
+volume — senão todo deploy voltaria ao original, que morre no dia 60 e derrubaria
+o feed sem aviso.
+
+Trocar o token é só pôr o novo no `.env` e subir: o servidor percebe que a
+semente mudou e adota. Para não perder o token renovado, o que importa é o
+backup do volume:
+
+```bash
+docker run --rm -v site-ftd_dados:/d -v "$PWD:/b" alpine \
+  tar czf /b/instagram-backup.tar.gz -C /d .
+```
+
 ## 5. Descobrir o `IG_USER_ID`
 
 Com o token em mãos, rode no terminal (troque `SEU_TOKEN`):

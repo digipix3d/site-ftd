@@ -30,6 +30,10 @@ const app = Fastify({
  */
 let estado = {
   token: TOKEN_INICIAL,
+  // Qual token do ambiente já foi adotado. É o que distingue "o operador pôs
+  // um token novo no .env" de "o token em disco foi renovado" — sem isso não
+  // dá para saber qual dos dois é mais recente.
+  tokenSemente: TOKEN_INICIAL,
   tokenAtualizadoEm: 0,
   posts: [],
   postsAtualizadosEm: 0,
@@ -39,12 +43,21 @@ async function carregarEstado() {
   try {
     const bruto = JSON.parse(await readFile(ARQ_ESTADO, 'utf8'));
     estado = { ...estado, ...bruto };
-    // Um token novo vindo do ambiente vence o que está em disco: é assim que
-    // você troca o token sem precisar apagar o volume.
-    if (TOKEN_INICIAL && TOKEN_INICIAL !== bruto.token) {
-      app.log.info('IG_TOKEN do ambiente difere do salvo — usando o do ambiente');
+
+    // O IG_TOKEN do .env é SEMENTE, não mandão. Comparamos com a semente já
+    // adotada, não com o token em uso: o token em uso muda a cada renovação,
+    // então comparar com ele fazia todo restart descartar o renovado e voltar
+    // ao original do .env — que morre em 60 dias e derruba o feed em silêncio.
+    //
+    // Trocar o token continua simples: valor novo no .env, ele é adotado.
+    if (TOKEN_INICIAL && TOKEN_INICIAL !== bruto.tokenSemente) {
+      app.log.info('IG_TOKEN novo no ambiente — adotando');
       estado.token = TOKEN_INICIAL;
+      estado.tokenSemente = TOKEN_INICIAL;
       estado.tokenAtualizadoEm = 0;
+    } else if (bruto.token) {
+      // Mesma semente de antes: o de disco está renovado e é o que vale.
+      estado.token = bruto.token;
     }
     app.log.info(`estado carregado: ${estado.posts.length} posts em cache`);
   } catch {
