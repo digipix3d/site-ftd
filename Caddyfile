@@ -22,7 +22,14 @@ www.{$DOMINIO} {
 
 	# O feed do Instagram serve imagens do CDN da Meta e o Google Analytics
 	# precisa do googletagmanager. Fora isso, nada de terceiros.
-	header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob: https://*.cdninstagram.com https://*.fbcdn.net; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://www.google-analytics.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+	#
+	# O Treco em 3D exige duas permissões a mais, e sem elas ele não gira:
+	#   'wasm-unsafe-eval' — o decodificador Draco é WebAssembly, e compilar wasm
+	#     é bloqueado por padrão. É a versão estreita: libera wasm, NÃO libera
+	#     eval() de JavaScript, que continua barrado.
+	#   worker-src 'self' blob: — o Draco roda num Web Worker criado a partir de
+	#     um blob:. Sem a diretiva o CSP cai no default-src 'self' e recusa.
+	header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob: https://*.cdninstagram.com https://*.fbcdn.net; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.googletagmanager.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://www.google-analytics.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
 
 	reverse_proxy web:3000
 }
