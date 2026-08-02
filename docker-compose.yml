@@ -1,7 +1,12 @@
 services:
   web:
+    # A imagem é construída pelo GitHub Actions e publicada no GHCR; a VPS só
+    # baixa. TAG é o SHA do commit, o que torna o rollback trivial:
+    #   TAG=<sha-anterior> docker compose up -d
+    image: ghcr.io/digipix3d/site-ftd:${TAG:-latest}
+    # Mantido para desenvolvimento local: `docker compose build` continua
+    # funcionando sem depender do registry.
     build: .
-    image: fabrica-de-trecos:latest
     restart: unless-stopped
     environment:
       IG_TOKEN: ${IG_TOKEN:-}

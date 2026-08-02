@@ -34,8 +34,65 @@ não precisa rodar certbot nem mexer em nginx.
 
 ### Atualizar depois de mudar o site
 
+**Normalmente você não faz nada.** Todo push no `master` publica sozinho, pelo
+GitHub Actions — veja a seção abaixo.
+
+Se precisar publicar na mão:
+
 ```bash
-git pull && docker compose up -d --build
+git pull && docker compose pull && docker compose up -d
+```
+
+## Publicação automática
+
+`.github/workflows/deploy.yml` cuida disso. Push no `master` → o Actions
+constrói a imagem, publica no GHCR, e o servidor só baixa.
+
+A imagem **não** é construída no servidor de propósito: a VPS tem 1,9 GB
+dividida com o site no ar, e um build ali deixa o site lento por minutos.
+
+```
+push no master
+   └─ Actions: docker build → ghcr.io/digipix3d/site-ftd:<sha>
+        └─ ssh na VPS → deploy.sh → docker compose pull + up -d
+             └─ healthcheck; se falhar, volta sozinho pra imagem anterior
+```
+
+### Voltar pra uma versão anterior
+
+A imagem é marcada com o SHA do commit, então não precisa reconstruir nada:
+
+```bash
+cd /opt/site-ftd
+docker image ls ghcr.io/digipix3d/site-ftd     # vê as tags disponíveis
+TAG=<sha-de-12-caracteres> docker compose up -d
+```
+
+### O que dá acesso ao servidor
+
+A chave que o Actions usa está presa a um único comando no
+`/root/.ssh/authorized_keys` do servidor:
+
+```
+command="/opt/site-ftd/deploy.sh $SSH_ORIGINAL_COMMAND",no-pty,no-port-forwarding,... ssh-ed25519 AAAA...
+```
+
+Ela **não** abre shell e não roda outro comando — só o deploy. Se o segredo
+vazar do GitHub, o estrago possível é publicar uma versão da imagem, não tomar
+o servidor. A tag também é validada contra `^[A-Za-z0-9._-]+$` antes de ser
+usada, senão um valor com `;` viraria comando.
+
+Segredos no repositório: `SSH_KEY`, `SSH_HOST`, `SSH_PORT`, `SSH_HOST_KEY`.
+O `SSH_HOST_KEY` fixa a identidade do servidor — sem ele o deploy aceitaria
+qualquer máquina que respondesse naquele IP.
+
+Trocar a chave de deploy, se algum dia precisar:
+
+```bash
+ssh-keygen -t ed25519 -N '' -C 'github-actions-deploy@site-ftd' -f deploy_key
+# no servidor: substitua a linha correspondente em /root/.ssh/authorized_keys
+gh secret set SSH_KEY --repo digipix3d/site-ftd < deploy_key
+rm deploy_key deploy_key.pub
 ```
 
 ### Comandos do dia a dia

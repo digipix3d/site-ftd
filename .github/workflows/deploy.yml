@@ -1,0 +1,114 @@
+# Publica o site automaticamente.
+#
+# Fluxo: o Actions constrói a imagem e publica no GHCR; a VPS só baixa. Isso
+# evita construir na VPS, que tem 1,9 GB dividida com o site no ar.
+#
+# A imagem é marcada com o SHA do commit, então voltar atrás é escolher outra
+# tag — não precisa reconstruir nada.
+
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+    # Mexer só na documentação não justifica republicar o site.
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+  workflow_dispatch:
+
+# Se dois pushes chegarem juntos, o segundo cancela o primeiro: publicar uma
+# versão que já foi superada só atrasa a que importa.
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+env:
+  IMAGEM: ghcr.io/${{ github.repository }}
+
+jobs:
+  construir:
+    name: Construir imagem
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Definir a tag
+        id: meta
+        run: echo "tag=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Autenticar no GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Construir e publicar
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGEM }}:${{ steps.meta.outputs.tag }}
+            ${{ env.IMAGEM }}:latest
+          # Cache entre execuções: sem isto, cada deploy reinstala as
+          # dependências do zero e o build passa de 1 min para vários.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  publicar:
+    name: Publicar na VPS
+    needs: construir
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy por SSH
+        env:
+          CHAVE: ${{ secrets.SSH_KEY }}
+          MAQUINA: ${{ secrets.SSH_HOST }}
+          PORTA: ${{ secrets.SSH_PORT }}
+          IMPRESSAO: ${{ secrets.SSH_HOST_KEY }}
+          TAG: ${{ needs.construir.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$CHAVE" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+
+          # Fixa a identidade do servidor. Sem isto seria preciso aceitar
+          # qualquer chave que respondesse no IP, e um sequestro de rota
+          # entregaria a sessão de deploy a outra máquina.
+          printf '%s\n' "$IMPRESSAO" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+          # A chave é restrita a um único comando lá na VPS (veja o command=
+          # em authorized_keys); o argumento chega pelo SSH_ORIGINAL_COMMAND.
+          ssh -i ~/.ssh/id_deploy \
+              -p "$PORTA" \
+              -o StrictHostKeyChecking=yes \
+              -o BatchMode=yes \
+              "root@$MAQUINA" "$TAG"
+
+      - name: Conferir o site no ar
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 10); do
+            codigo=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
+                     https://fabricadetrecos.com.br/ || true)
+            if [ "$codigo" = "200" ]; then
+              echo "site respondendo ($codigo)"
+              exit 0
+            fi
+            echo "tentativa $i: $codigo"
+            sleep 5
+          done
+          echo "site não respondeu 200 pela internet" >&2
+          exit 1
